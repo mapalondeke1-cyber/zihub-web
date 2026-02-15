@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import Register from './Register'; // This connects your NRC form to the homepage
+import Register from './Register'; // This connects the form you created
 
 const ZIHubWebHome = () => {
-  // This 'state' tells the app which page to show. 
-  // false = Home, true = Registration form.
+  // Logic: false = Home Screen, true = Register Screen
   const [showRegister, setShowRegister] = useState(false);
 
   return (
@@ -12,20 +11,18 @@ const ZIHubWebHome = () => {
       <nav className="flex justify-between items-center p-6 bg-white shadow-sm border-t-4 border-green-600">
         <div 
           className="text-2xl font-bold text-black flex items-center cursor-pointer"
-          onClick={() => setShowRegister(false)} // Clicking the logo takes you home
+          onClick={() => setShowRegister(false)}
         >
           <span className="text-green-600">ZI</span>HUB
           <span className="ml-2 bg-orange-500 w-3 h-3 rounded-full"></span>
         </div>
-        <div className="space-x-8 font-medium hidden md:flex">
+        <div className="space-x-8 font-medium">
           <button onClick={() => setShowRegister(false)} className="hover:text-green-600">Invest</button>
           <button className="hover:text-green-600">EdTech</button>
           <button className="hover:text-green-600">Marketplace</button>
-        </div>
-        <div>
-          {/* THE FIX: This button now triggers the form */}
+          {/* This button now triggers the switch to the Register form */}
           <button 
-            onClick={() => setShowRegister(true)}
+            onClick={() => setShowRegister(true)} 
             className="bg-black text-white px-6 py-2 rounded-full hover:bg-green-700 transition"
           >
             Join Hub
@@ -33,16 +30,16 @@ const ZIHubWebHome = () => {
         </div>
       </nav>
 
-      {/* Logic: Show Register form if showRegister is true, otherwise show the Hero */}
+      {/* Switch Logic */}
       {showRegister ? (
         <div className="py-10">
-           <button 
-             onClick={() => setShowRegister(false)} 
-             className="ml-10 text-green-600 font-bold hover:underline"
-           >
-             ← Back to Home
-           </button>
-           <Register />
+          <button 
+            onClick={() => setShowRegister(false)} 
+            className="ml-10 mb-5 text-green-600 font-bold hover:underline"
+          >
+            ← Back to Home
+          </button>
+          <Register />
         </div>
       ) : (
         <header className="relative h-[80vh] flex items-center justify-center bg-slate-900 overflow-hidden text-white">
@@ -65,7 +62,6 @@ const ZIHubWebHome = () => {
               </button>
             </div>
           </div>
-          {/* Hero Image Background */}
           <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1577947582344-e29058b29c9c')] bg-cover bg-center"></div>
         </header>
       )}
