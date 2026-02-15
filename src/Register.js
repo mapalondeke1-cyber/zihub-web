@@ -7,11 +7,32 @@ const Register = () => {
     photo: null
   });
 
-  const handleSubmit = (e) => {
+  // CEO Note: We added 'async' here so the app waits for the upload to finish
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // CEO Note: This is where we send the NRC photo to our Cloud Storage (like Cloudinary or AWS)
-    console.log("Submitting to ZIHUB Backend:", formData);
-    alert("NRC submitted! Our team will verify your identity within 24 hours.");
+    
+    // 1. Create a data package to hold the text AND the photo
+    const data = new FormData();
+    data.append('fullName', formData.fullName);
+    data.append('nrcNumber', formData.nrcNumber);
+    data.append('nrcPhoto', formData.photo);
+
+    try {
+      // 2. Send this package to our Backend Server on Port 5000
+      const response = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        body: data,
+      });
+
+      if (response.ok) {
+        alert("Registration Successful! Your NRC is being verified.");
+      } else {
+        alert("Server error. Please try again later.");
+      }
+    } catch (error) {
+      console.error("Connection error:", error);
+      alert("Could not connect to the ZIHUB server. Is it running?");
+    }
   };
 
   return (
@@ -30,7 +51,7 @@ const Register = () => {
         </div>
         
         <div>
-          <label className="block text-sm font-semibold mb-1">NRC Number (Format: 000000/00/1)</label>
+          <label className="block text-sm font-semibold mb-1">NRC Number</label>
           <input 
             type="text" 
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
