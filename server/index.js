@@ -2,47 +2,72 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
-require('dotenv').config(); // This keeps our database password secret
+const path = require('path');
+require('dotenv').config(); // Loads your MONGO_URI from the .env file
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// 1. Connect to MongoDB (Replace with your connection string later)
-const MONGO_URI = "your_mongodb_connection_string_here";
-mongoose.connect(MONGO_URI)
-  .then(() => console.log("ZIHUB Database Connected!"))
-  .catch(err => console.log("Database Error:", err));
+// 1. Connect to MongoDB Atlas
+// CEO Note: This uses the secret string you put in your .env file
+const MONGO_URI = process.env.MONGO_URI;
 
-// 2. Create a 'Schema' (This is the blueprint for a User)
-const UserSchema = new mongoose.Schema({
-  fullName: String,
-  nrcNumber: String,
-  nrcPhotoUrl: String,
-  verified: { type: Boolean, default: false }, // For the CEO to approve
-  createdAt: { type: Date, default: Date.now }
+mongoose.connect(MONGO_URI)
+  .then(() => console.log("✅ Success! ZIHUB is connected to MongoDB Atlas."))
+  .catch(err => console.log("❌ Connection Failed. Check your password in .env or IP access:", err));
+
+// 2. Define the User "Blueprint" (Schema)
+const userSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  nrcNumber: { type: String, required: true },
+  nrcPhotoPath: String,
+  verified: { type: Boolean, default: false },
+  registrationDate: { type: Date, default: Date.now }
 });
 
-const User = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', userSchema);
 
-// 3. Configure File Uploads
-const upload = multer({ dest: 'uploads/' });
-
-// 4. The Registration Route
-app.post('/api/register', upload.single('nrcPhoto'), async (req, res) => {
-  try {
-    const newUser = new User({
-      fullName: req.body.fullName,
-      nrcNumber: req.body.nrcNumber,
-      nrcPhotoUrl: req.file ? req.file.path : ""
-    });
-
-    await newUser.save();
-    res.status(200).json({ message: "Registration saved to Database!" });
-  } catch (error) {
-    res.status(500).json({ message: "Error saving to database" });
+// 3. Configure how to handle the NRC Photo Upload
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, 'NRC-' + Date.now() + path.extname(file.originalname));
   }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server active on port ${PORT}`));
+const upload = multer({ storage: storage });
+
+// 4. The Registration Route (This catches the data from the Frontend)
+app.post('/api/register', upload.single('nrcPhoto'), async (req, res) => {
+  try {
+    const { fullName, nrcNumber } = req.body;
+    
+    // Create the new user entry
+    const newUser = new User({
+      fullName: fullName,
+      nrcNumber: nrcNumber,
+      nrcPhotoPath: req.file ? req.file.path : 'no-photo'
+    });
+
+    // Save to MongoDB
+    await newUser.save();
+    
+    console.log(`👤 New User Registered: ${fullName}`);
+    res.status(200).json({ message: "Data saved successfully to ZIHUB vault!" });
+
+  } catch (error) {
+    console.error("Database Error:", error);
+    res.status(500).json({ error: "Failed to save registration." });
+  }
+});
+
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 ZIHUB Engine running on port ${PORT}`);
+});
