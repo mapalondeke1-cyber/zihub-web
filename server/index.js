@@ -67,8 +67,16 @@ app.post('/api/register', upload.single('nrcPhoto'), async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+// Export the Express API for Vercel
+module.exports = app;
+
+// Only start the server if we are running locally (not on Vercel)
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 ZIHUB Engine running on port ${PORT}`);
+  });
+}
   console.log(`🚀 ZIHUB Engine running on port ${PORT}`);
 });
 module.exports = app;
