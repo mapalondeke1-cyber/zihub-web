@@ -2,66 +2,57 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 require('dotenv').config();
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// 1. Connect to MongoDB Atlas
-const MONGO_URI = process.env.MONGO_URI;
-
-mongoose.connect(MONGO_URI)
-  .then(() => console.log("✅ ZIHUB Database Connected"))
-  .catch(err => console.log("❌ Database Connection Error:", err));
-
-// 2. User Schema
-const userSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  nrcNumber: { type: String, required: true },
-  nrcPhotoPath: String,
-  registrationDate: { type: Date, default: Date.now }
+// 1. Cloudinary Config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const User = mongoose.model('User', userSchema);
-
-// 3. Updated Photo Storage (Points to your server/uploads folder)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // This matches the folder in your screenshot
-    cb(null, 'server/uploads/'); 
+// 2. Setup Cloudinary Storage for Multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'zihub_nrcs',
+    allowed_formats: ['jpg', 'png', 'jpeg'],
   },
-  filename: (req, file, cb) => {
-    cb(null, 'NRC-' + Date.now() + path.extname(file.originalname));
-  }
 });
-
 const upload = multer({ storage: storage });
 
-// 4. Registration Route
+// 3. MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ ZIHUB Database Online"))
+  .catch(err => console.log("❌ DB Error:", err));
+
+// 4. User Schema
+const User = mongoose.model('User', new mongoose.Schema({
+  fullName: String,
+  nrcNumber: String,
+  nrcPhotoUrl: String, // We now store the URL from the cloud
+  verified: { type: Boolean, default: false }
+}));
+
+// 5. Submit Route
 app.post('/api/register', upload.single('nrcPhoto'), async (req, res) => {
   try {
     const newUser = new User({
       fullName: req.body.fullName,
       nrcNumber: req.body.nrcNumber,
-      nrcPhotoPath: req.file ? req.file.path : 'no-photo'
+      nrcPhotoUrl: req.file.path // This is the web link to the photo
     });
-
     await newUser.save();
-    res.status(200).json({ message: "Success! Data saved to MongoDB." });
+    res.status(200).json({ success: true, message: "Verification Sent!" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to save to database." });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 5. Vercel Export (The fix for the connection error)
 module.exports = app;
-
-// Local development only
-if (require.main === module) {
-  app.listen(5000, () => console.log("🚀 Engine running on 5000"));
-}
