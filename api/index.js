@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-require('dotenv').config(); // Loads your MONGO_URI from the .env file
+require('dotenv').config();
 
 const app = express();
 
@@ -12,28 +12,27 @@ app.use(cors());
 app.use(express.json());
 
 // 1. Connect to MongoDB Atlas
-// CEO Note: This uses the secret string you put in your .env file
 const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log("✅ Success! ZIHUB is connected to MongoDB Atlas."))
-  .catch(err => console.log("❌ Connection Failed. Check your password in .env or IP access:", err));
+  .then(() => console.log("✅ ZIHUB Database Connected"))
+  .catch(err => console.log("❌ Database Connection Error:", err));
 
-// 2. Define the User "Blueprint" (Schema)
+// 2. User Schema
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   nrcNumber: { type: String, required: true },
   nrcPhotoPath: String,
-  verified: { type: Boolean, default: false },
   registrationDate: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
 
-// 3. Configure how to handle the NRC Photo Upload
+// 3. Updated Photo Storage (Points to your server/uploads folder)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    // This matches the folder in your screenshot
+    cb(null, 'server/uploads/'); 
   },
   filename: (req, file, cb) => {
     cb(null, 'NRC-' + Date.now() + path.extname(file.originalname));
@@ -42,41 +41,27 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// 4. The Registration Route (This catches the data from the Frontend)
+// 4. Registration Route
 app.post('/api/register', upload.single('nrcPhoto'), async (req, res) => {
   try {
-    const { fullName, nrcNumber } = req.body;
-    
-    // Create the new user entry
     const newUser = new User({
-      fullName: fullName,
-      nrcNumber: nrcNumber,
+      fullName: req.body.fullName,
+      nrcNumber: req.body.nrcNumber,
       nrcPhotoPath: req.file ? req.file.path : 'no-photo'
     });
 
-    // Save to MongoDB
     await newUser.save();
-    
-    console.log(`👤 New User Registered: ${fullName}`);
-    res.status(200).json({ message: "Data saved successfully to ZIHUB vault!" });
-
+    res.status(200).json({ message: "Success! Data saved to MongoDB." });
   } catch (error) {
-    console.error("Database Error:", error);
-    res.status(500).json({ error: "Failed to save registration." });
+    console.error(error);
+    res.status(500).json({ error: "Failed to save to database." });
   }
 });
 
-// Start the server
-// Export the Express API for Vercel
+// 5. Vercel Export (The fix for the connection error)
 module.exports = app;
 
-// Only start the server if we are running locally (not on Vercel)
+// Local development only
 if (require.main === module) {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`🚀 ZIHUB Engine running on port ${PORT}`);
-  });
+  app.listen(5000, () => console.log("🚀 Engine running on 5000"));
 }
-  console.log(`🚀 ZIHUB Engine running on port ${PORT}`);
-});
-module.exports = app;
