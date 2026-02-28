@@ -2,9 +2,9 @@
   "name": "zihub-web",
   "version": "1.0.0",
   "private": true,
-"dependencies": {
+  "dependencies": {
     "axios": "^1.6.0",
-    "cloudinary": "^1.41.0", 
+    "cloudinary": "^1.41.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
@@ -16,7 +16,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
     "react-scripts": "5.0.1"
-  }
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
