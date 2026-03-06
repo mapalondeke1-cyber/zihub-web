@@ -1,72 +1,54 @@
-import React, { useState } from 'react';
-import Register from './Register'; // This connects the form you created
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-const ZIHubWebHome = () => {
-  // Logic: false = Home Screen, true = Register Screen
-  const [showRegister, setShowRegister] = useState(false);
+const Home = () => {
+  const styles = {
+    container: { fontFamily: "'Inter', sans-serif", color: '#2d3436', backgroundColor: '#fdfbf7', minHeight: '100vh' },
+    nav: { display: 'flex', justifyContent: 'space-between', padding: '20px 5%', backgroundColor: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
+    logo: { fontSize: '24px', fontWeight: '800', color: '#1a4a1a', textDecoration: 'none' },
+    hero: { padding: '80px 5%', textAlign: 'center', background: 'linear-gradient(rgba(26,74,26,0.05), rgba(255,255,255,0))' },
+    title: { fontSize: '3.5rem', marginBottom: '20px', color: '#1a4a1a' },
+    buttonPrimary: { padding: '12px 30px', backgroundColor: '#1a4a1a', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', marginRight: '15px', transition: '0.3s' },
+    buttonSecondary: { padding: '12px 30px', border: '2px solid #1a4a1a', color: '#1a4a1a', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Navigation */}
-      <nav className="flex justify-between items-center p-6 bg-white shadow-sm border-t-4 border-green-600">
-        <div 
-          className="text-2xl font-bold text-black flex items-center cursor-pointer"
-          onClick={() => setShowRegister(false)}
-        >
-          <span className="text-green-600">ZI</span>HUB
-          <span className="ml-2 bg-orange-500 w-3 h-3 rounded-full"></span>
-        </div>
-        <div className="space-x-8 font-medium">
-          <button onClick={() => setShowRegister(false)} className="hover:text-green-600">Invest</button>
-          <button className="hover:text-green-600">EdTech</button>
-          <button className="hover:text-green-600">Marketplace</button>
-          {/* This button now triggers the switch to the Register form */}
-          <button 
-            onClick={() => setShowRegister(true)} 
-            className="bg-black text-white px-6 py-2 rounded-full hover:bg-green-700 transition"
-          >
-            Join Hub
-          </button>
+    <div style={styles.container}>
+      <nav style={styles.nav}>
+        <Link to="/" style={styles.logo}>ZIHUB</Link>
+        <div>
+          {['Invest', 'EdTech', 'Marketplace'].map(item => (
+            <Link key={item} to={`/${item.toLowerCase()}`} style={{ marginLeft: '25px', textDecoration: 'none', color: '#636e72', fontWeight: '500' }}>{item}</Link>
+          ))}
+          <Link to="/register" style={{ marginLeft: '25px', color: '#e67e22', fontWeight: 'bold', textDecoration: 'none' }}>Join Hub</Link>
         </div>
       </nav>
 
-      {/* Switch Logic */}
-      {showRegister ? (
-        <div className="py-10">
-          <button 
-            onClick={() => setShowRegister(false)} 
-            className="ml-10 mb-5 text-green-600 font-bold hover:underline"
-          >
-            ← Back to Home
-          </button>
-          <Register />
+      <header style={styles.hero}>
+        <h1 style={styles.title}>Empowering Zambia's Future</h1>
+        <p style={{ fontSize: '1.2rem', color: '#636e72', maxWidth: '700px', margin: '0 auto 40px' }}>
+          The all-in-one platform for Zambian Innovation, Culture, and Investment. 
+          Bridging the gap between heritage and technology.
+        </p>
+        <div style={{ marginTop: '40px' }}>
+          <Link to="/invest" style={styles.buttonPrimary}>Start Investing</Link>
+          <Link to="/culture" style={styles.buttonSecondary}>Explore Culture</Link>
         </div>
-      ) : (
-        <header className="relative h-[80vh] flex items-center justify-center bg-slate-900 overflow-hidden text-white">
-          <div className="absolute z-10 text-center px-4">
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight">
-              Empowering <span className="text-green-500">Zambia's</span> Future
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-gray-300">
-              The all-in-one platform for Zambian Innovation, Culture, and Investment.
-            </p>
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <button 
-                onClick={() => setShowRegister(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-4 rounded-lg font-bold text-lg shadow-lg"
-              >
-                Start Investing
-              </button>
-              <button className="border-2 border-white hover:bg-white hover:text-black px-10 py-4 rounded-lg font-bold text-lg transition">
-                Explore Culture
-              </button>
-            </div>
-          </div>
-          <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1577947582344-e29058b29c9c')] bg-cover bg-center"></div>
-        </header>
-      )}
+      </header>
+
+      <section style={{ padding: '60px 5%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
+        {/* Quick Access Cards */}
+        <div style={{ padding: '30px', borderRadius: '15px', backgroundColor: '#fff', border: '1px solid #eee' }}>
+          <h3 style={{ color: '#1a4a1a' }}>Marketplace</h3>
+          <p>Discover locally crafted products and trade with fellow Zambians.</p>
+        </div>
+        <div style={{ padding: '30px', borderRadius: '15px', backgroundColor: '#fff', border: '1px solid #eee' }}>
+          <h3 style={{ color: '#1a4a1a' }}>Education</h3>
+          <p>Access specialized courses tailored for the Zambian economic landscape.</p>
+        </div>
+      </section>
     </div>
   );
 };
 
-export default ZIHubWebHome;
+export default Home;
